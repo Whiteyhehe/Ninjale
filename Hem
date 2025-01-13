@@ -1,0 +1,286 @@
+-- Load the Orion Library from the new URL
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+-- Create the main window for the GUI
+local Window = OrionLib:MakeWindow({
+    Name = "Ninja Legends",
+    HidePremium = true,
+    SaveConfig = true,
+    ConfigFolder = "NinjaLegends"
+})
+
+-- Create the 'Auto Swing' Tab
+local AutoSwingTab = Window:MakeTab({
+    Name = "Auto Swing 🤺", -- Emoji for Auto Swing in the tab name
+    Icon = "rbxassetid://4483345998", -- You can keep the icon or change it as desired
+    PremiumOnly = false
+})
+
+-- Add a description label to the Auto Swing Tab
+AutoSwingTab:AddLabel("Automatically swing your katana.")
+
+-- Declare a variable to control the auto-swing loop
+local autoSwingRunning = false
+
+-- Add the toggle for Auto Swing functionality
+AutoSwingTab:AddToggle({
+    Name = "Toggle Auto Swing",
+    Default = false,
+    Callback = function(state)
+        -- Define the argument for swinging the katana
+        local args = {
+            [1] = "swingKatana"
+        }
+
+        if state then
+            -- Activate Auto Swing when toggle is on (state = true)
+            autoSwingRunning = true
+            while autoSwingRunning do
+                game:GetService("Players").LocalPlayer.ninjaEvent:FireServer(unpack(args))
+                wait(0.1) -- Adjust the delay if needed
+            end
+        else
+            -- Stop Auto Swing when toggle is off (state = false)
+            autoSwingRunning = false
+        end
+    end
+})
+
+-- Create the 'Buy All' Tab
+local BuyAllTab = Window:MakeTab({
+    Name = "Buy All 💸", -- Emoji for Buy All in the tab name
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Add a description label to the Buy All Tab
+BuyAllTab:AddLabel("Buy all katanas and belts instantly.")
+
+-- Add the 'Buy Katana' toggle
+BuyAllTab:AddToggle({
+    Name = "Buy Katana",
+    Default = false,
+    Callback = function(state)
+        local args = {
+            [1] = "buyAllSwords",
+            [2] = "Blazing Vortex Island"
+        }
+
+        if state then
+            -- Trigger buying all katanas when toggle is on
+            game:GetService("Players").LocalPlayer.ninjaEvent:FireServer(unpack(args))
+        end
+    end
+})
+
+-- Add the 'Buy Belts' toggle
+BuyAllTab:AddToggle({
+    Name = "Buy Belts",
+    Default = false,
+    Callback = function(state)
+        local args = {
+            [1] = "buyAllBelts",
+            [2] = "Blazing Vortex Island"
+        }
+
+        if state then
+            -- Trigger buying all belts when toggle is on
+            game:GetService("Players").LocalPlayer.ninjaEvent:FireServer(unpack(args))
+        end
+    end
+})
+
+-- Create the 'Auto Evolve Pet' Tab
+local AutoEvolveTab = Window:MakeTab({
+    Name = "Auto Evolve Pet 🦄", -- Emoji for Auto Evolve Pet in the tab name
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Add a description label to the Auto Evolve Pet Tab
+AutoEvolveTab:AddLabel("Evolve your pets automatically.")
+
+-- Declare a variable to control the auto-evolve loop
+local autoEvolveRunning = false
+
+-- Add the toggle for Auto Evolve Pet
+AutoEvolveTab:AddToggle({
+    Name = "Auto Evolve Pets",
+    Default = false,
+    Callback = function(state)
+        local args = {
+            [1] = "autoEvolvePets"
+        }
+
+        if state then
+            -- Activate Auto Evolve Pet when toggle is on (state = true)
+            autoEvolveRunning = true
+            while autoEvolveRunning do
+                game:GetService("ReplicatedStorage").rEvents.autoEvolveRemote:InvokeServer(unpack(args))
+                wait(0.1) -- Adjust the delay as needed
+            end
+        else
+            -- Stop Auto Evolve Pet when toggle is off (state = false)
+            autoEvolveRunning = false
+        end
+    end
+})
+
+-- Create the 'Get Pet' Tab
+local GetPetTab = Window:MakeTab({
+    Name = "Get Pet 🐾", -- Emoji for Get Pet in the tab name
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Add a description label to the Get Pet Tab
+GetPetTab:AddLabel("Get a pet from the pet shop.")
+
+-- Add a textbox for the pet name input
+GetPetTab:AddTextbox({
+    Name = "Pet Name",
+    Default = "", -- Default text is empty
+    TextDisappear = true, -- Text disappears after input
+    Callback = function(petName)
+        -- Store the pet name entered by the user
+        _G.petName = petName
+    end
+})
+
+-- Add a toggle for getting the pet
+GetPetTab:AddToggle({
+    Name = "Get Pet",
+    Default = false,
+    Callback = function(state)
+        -- Declare a variable to track the loop state
+        local getPetRunning = false
+
+        -- Check if the petName is valid (non-empty)
+        if _G.petName and _G.petName ~= "" then
+            -- Find the pet in the Pet Shop folder
+            local pet = game:GetService("ReplicatedStorage").cPetShopFolder:FindFirstChild(_G.petName)
+
+            if pet then
+                -- Loop when toggle is on
+                if state and not getPetRunning then
+                    getPetRunning = true
+                    while getPetRunning and state do
+                        -- Trigger the action to get the pet using the specified pet name
+                        local args = { pet }
+                        game:GetService("ReplicatedStorage").cPetShopRemote:InvokeServer(unpack(args))
+                        print("Getting pet: " .. _G.petName) -- Optional print for confirmation
+
+                        wait(0.4) -- Wait 0.4 seconds before attempting again
+                    end
+                end
+            else
+                print("Pet not found!") -- If pet is not found in the folder
+            end
+        else
+            print("Please enter a valid pet name.") -- If toggle is off or pet name is empty
+        end
+
+        -- Stop the loop when the toggle is off
+        if not state then
+            getPetRunning = false
+        end
+    end
+})
+
+-- Create the 'Islands' Tab
+local IslandsTab = Window:MakeTab({
+    Name = "Islands 🏝️", -- Emoji for Islands in the tab name
+    Icon = "rbxassetid://4483345998", -- Icon for the tab
+    PremiumOnly = false
+})
+
+-- Add a description label to the Islands Tab
+IslandsTab:AddLabel("Teleport to different islands.")
+
+-- Define a function to teleport to the specific island part
+local function teleportToIsland(islandName)
+    local islandPart = workspace.islandUnlockParts:FindFirstChild(islandName)
+
+    -- Check if the island part exists
+    if islandPart then
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        
+        -- Ensure the character has a HumanoidRootPart for teleportation
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            -- Teleport the player to the island part's position and orientation
+            character.HumanoidRootPart.CFrame = islandPart.CFrame
+        else
+            warn("HumanoidRootPart not found. Cannot teleport.")
+        end
+    else
+        warn("Island part not found: " .. islandName)
+    end
+end
+
+-- Create a dropdown for the islands and teleport functionality
+IslandsTab:AddDropdown({
+    Name = "Select Island",
+    Default = "Select an Island", -- Default text
+    Options = {
+        "Chaos Legends Island", "Astral Island", "Ancient Inferno Island", 
+        "Blazing Vortex Island", "Cybernetic Legends Island", "Dark Elements Island", 
+        "Dragon Legend Island", "Enchanted Island", "Eternal Island", 
+        "Golden Master Island", "Inner Peace Island", "Midnight Shadow Island", 
+        "Mystical Island", "Mythical Souls Island", "Sandstorm", "Skystorm Ultraus Island", 
+        "Soul Fusion Island", "Space Island", "Thunderstorm", "Tundra Island", 
+        "Winter Wonder Island"
+    }, -- All your island names
+    Callback = function(islandName)
+        -- Call the teleport function to teleport to the selected island
+        teleportToIsland(islandName)
+    end
+})
+
+-- Create the 'Auto Sell' Tab
+local AutoSellTab = Window:MakeTab({
+    Name = "Auto Sell 💰", -- Emoji for Auto Sell in the tab name
+    Icon = "rbxassetid://4483345998", -- You can change the icon if desired
+    PremiumOnly = false
+})
+
+-- Add a description label to the Auto Sell Tab
+AutoSellTab:AddLabel("Automatically sell items when needed.")
+
+-- Declare a variable to track the auto-sell loop state
+local autoSellRunning = false
+
+-- Add a toggle for Auto Sell functionality
+AutoSellTab:AddToggle({
+    Name = "Toggle Auto Sell",
+    Default = false,
+    Callback = function(state)
+        -- When toggle is on, start the loop
+        if state then
+            -- When toggle is on, start the auto-sell functionality
+            autoSellRunning = true
+            while autoSellRunning do
+                -- Check if the target part exists
+                local targetPart = workspace.sellAreaCircles:GetChildren()[20].circleInner
+
+                -- Check if the part exists
+                if targetPart then
+                    local player = game.Players.LocalPlayer
+                    if player and player.Character then
+                        -- Teleport the player to the target position
+                        player.Character:SetPrimaryPartCFrame(targetPart.CFrame)
+                    end
+                else
+                    print("The target part was not found.")
+                end
+                wait(1)  -- Wait for 1 second before teleporting again
+            end
+        else
+            -- When toggle is off, stop the auto-sell functionality
+            autoSellRunning = false
+        end
+    end
+})
+
+-- Finally, load the Orion GUI.
+OrionLib:Init()
