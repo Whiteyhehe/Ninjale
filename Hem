@@ -9,43 +9,6 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "NinjaLegends"
 })
 
--- Create the 'Auto Swing' Tab
-local AutoSwingTab = Window:MakeTab({
-    Name = "Auto Swing 🤺", -- Emoji for Auto Swing in the tab name
-    Icon = "rbxassetid://4483345998", -- You can keep the icon or change it as desired
-    PremiumOnly = false
-})
-
--- Add a description label to the Auto Swing Tab
-AutoSwingTab:AddLabel("Automatically swing your katana.")
-
--- Declare a variable to control the auto-swing loop
-local autoSwingRunning = false
-
--- Add the toggle for Auto Swing functionality
-AutoSwingTab:AddToggle({
-    Name = "Toggle Auto Swing",
-    Default = false,
-    Callback = function(state)
-        -- Define the argument for swinging the katana
-        local args = {
-            [1] = "swingKatana"
-        }
-
-        if state then
-            -- Activate Auto Swing when toggle is on (state = true)
-            autoSwingRunning = true
-            while autoSwingRunning do
-                game:GetService("Players").LocalPlayer.ninjaEvent:FireServer(unpack(args))
-                wait(0.1) -- Adjust the delay if needed
-            end
-        else
-            -- Stop Auto Swing when toggle is off (state = false)
-            autoSwingRunning = false
-        end
-    end
-})
-
 -- Create the 'Buy All' Tab
 local BuyAllTab = Window:MakeTab({
     Name = "Buy All 💸", -- Emoji for Buy All in the tab name
@@ -237,48 +200,139 @@ IslandsTab:AddDropdown({
     end
 })
 
--- Create the 'Auto Sell' Tab
-local AutoSellTab = Window:MakeTab({
-    Name = "Auto Sell 💰", -- Emoji for Auto Sell in the tab name
-    Icon = "rbxassetid://4483345998", -- You can change the icon if desired
+local selectedEgg = "Blue Crystal"
+getgenv().autoGoodKarma = false
+getgenv().autoBadKarma = false
+getgenv().autoSwing = false
+getgenv().autoSell = false
+getgenv().autoBuySwords = false
+
+-- Farming Tab
+local FarmingTab = Window:MakeTab({
+    Name = "Farming",
+    Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
 
--- Add a description label to the Auto Sell Tab
-AutoSellTab:AddLabel("Automatically sell items when needed.")
-
--- Declare a variable to track the auto-sell loop state
-local autoSellRunning = false
-
--- Add a toggle for Auto Sell functionality
-AutoSellTab:AddToggle({
-    Name = "Toggle Auto Sell",
+FarmingTab:AddToggle({
+    Name = "Auto Good Karma",
     Default = false,
     Callback = function(state)
-        -- When toggle is on, start the loop
-        if state then
-            -- When toggle is on, start the auto-sell functionality
-            autoSellRunning = true
-            while autoSellRunning do
-                -- Check if the target part exists
-                local targetPart = workspace.sellAreaCircles:GetChildren()[20].circleInner
-
-                -- Check if the part exists
-                if targetPart then
-                    local player = game.Players.LocalPlayer
-                    if player and player.Character then
-                        -- Teleport the player to the target position
-                        player.Character:SetPrimaryPartCFrame(targetPart.CFrame)
-                    end
-                else
-                    print("The target part was not found.")
-                end
-                wait(1)  -- Wait for 1 second before teleporting again
-            end
-        else
-            -- When toggle is off, stop the auto-sell functionality
-            autoSellRunning = false
+        getgenv().autoGoodKarma = state
+        while getgenv().autoGoodKarma do
+            game:GetService("ReplicatedStorage").GivePlayerKarma:FireServer("GoodKarma", 1)
+            wait(1)
         end
+    end
+})
+
+FarmingTab:AddToggle({
+    Name = "Auto Bad Karma",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoBadKarma = state
+        while getgenv().autoBadKarma do
+            game:GetService("ReplicatedStorage").GivePlayerKarma:FireServer("BadKarma", 1)
+            wait(1)
+        end
+    end
+})
+
+FarmingTab:AddToggle({
+    Name = "Auto Swing",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoSwing = state
+        while getgenv().autoSwing do
+            game:GetService("Players").LocalPlayer.ninjaEvent:FireServer("swingKatana")
+            wait(0.1)
+        end
+    end
+})
+
+FarmingTab:AddToggle({
+    Name = "Auto Sell",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoSell = state
+        while getgenv().autoSell do
+            local sellArea = game:GetService("Workspace").sellAreaCircles["sellAreaCircle5"]
+            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = sellArea.CFrame
+            wait(5)
+        end
+    end
+})
+
+-- Auto Buy Tab
+local AutoBuyTab = Window:MakeTab({
+    Name = "Auto Buy",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+AutoBuyTab:AddToggle({
+    Name = "Auto Buy Swords",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoBuySwords = state
+        while getgenv().autoBuySwords do
+            game:GetService("Players").LocalPlayer.ninjaEvent:FireServer("buyAllSwords", "Inner Peace")
+            wait(1)
+        end
+    end
+})
+
+-- Misc Tab
+local MiscTab = Window:MakeTab({
+    Name = "Misc",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+MiscTab:AddDropdown({
+    Name = "Select Egg",
+    Default = "Blue Crystal",
+    Options = {
+        "Blue Crystal",
+        "Purple Crystal",
+        "Orange Crystal",
+        "Enchanted Crystal",
+        "Astral Crystal",
+        "Golden Crystal"
+    },
+    Callback = function(value)
+        selectedEgg = value
+    end
+})
+
+MiscTab:AddButton({
+    Name = "Unlock All Islands",
+    Callback = function()
+        for _, v in pairs(game:GetService("Workspace").islandUnlockParts:GetChildren()) do
+            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+            wait(0.2)
+        end
+    end
+})
+
+-- Teleports Tab
+local TeleportsTab = Window:MakeTab({
+    Name = "Teleports",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+TeleportsTab:AddButton({
+    Name = "Teleport to Shop",
+    Callback = function()
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").shopAreaCircles["shopAreaCircle"].CFrame
+    end
+})
+
+TeleportsTab:AddButton({
+    Name = "Teleport to KOTH",
+    Callback = function()
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").kothAreaPart.CFrame
     end
 })
 
